@@ -82,44 +82,13 @@ Angular CLI
 MySQL
 Maven
 
-📥 Clone the Repository
-git clone https://github.com/your-username/mediportal.git
-cd mediportal
-▶️ Backend Setup
-cd backend
-mvn clean install
-mvn spring-boot:run
-💻 Frontend Setup
-cd frontend
-npm install
-ng serve
-🗄️ Database Setup
-
-Create a MySQL database:
-
-CREATE DATABASE mediportal;
-
-Update application.properties:
-
-spring.datasource.url=jdbc:mysql://localhost:3306/mediportal
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-📡 API Endpoints (Examples)
-Method	Endpoint	Description
-POST	/api/auth/register	Register new user
-POST	/api/auth/login	Login user
-GET	/api/patient/profile	Get patient profile
-POST	/api/patient/triage	Submit triage request
-GET	/api/admin/triage-requests	View all triage requests
 🧪 Testing
-
 Backend tested using Postman
 Unit testing (Spring Boot – optional extension)
 Manual UI testing for user workflows
 
 📈 Future Improvements
 Real-time notifications (WebSockets)
-Appointment booking system
 Electronic prescription management
 Enhanced AI diagnosis accuracy
 Mobile app version (React Native / Flutter)
