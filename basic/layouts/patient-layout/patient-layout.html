@@ -1,0 +1,86 @@
+<nz-layout class="shell">
+  <!-- Sidebar -->
+  <nz-sider
+    class="sider"
+    [nzWidth]="260"
+    [nzCollapsedWidth]="72"
+    nzCollapsible
+    [(nzCollapsed)]="isCollapsed"
+  >
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span class="brand-text" *ngIf="!isCollapsed">MediPortal</span>
+    </div>
+
+    <div class="sider-scroll">
+      <ul nz-menu nzTheme="dark" nzMode="inline" class="menu">
+        <li nz-menu-item routerLink="/patient/dashboard" routerLinkActive="active">
+          <span nz-icon nzType="dashboard"></span>
+          <span *ngIf="!isCollapsed">Dashboard</span>
+        </li>
+
+        <li nz-menu-item routerLink="/patient/medicalHistory" routerLinkActive="active">
+          <span nz-icon nzType="file-text"></span>
+          <span *ngIf="!isCollapsed">Medical History</span>
+        </li>
+
+        <li nz-menu-item routerLink="/patient/medication" routerLinkActive="active">
+          <span nz-icon nzType="medicine-box"></span>
+          <span *ngIf="!isCollapsed">Medications</span>
+        </li>
+
+        <li nz-menu-item routerLink="/patient/messages" routerLinkActive="active">
+          <span nz-icon nzType="message"></span>
+          <span *ngIf="!isCollapsed">Messages</span>
+        </li>
+
+        <li nz-menu-item routerLink="/patient/book-appointment" routerLinkActive="active">
+          <span nz-icon nzType="calendar"></span>
+          <span *ngIf="!isCollapsed">Appointments</span>
+        </li>
+
+        <li nz-menu-item routerLink="/patient/ai-symptomchecker" routerLinkActive="active">
+          <span nz-icon nzType="robot"></span>
+          <span *ngIf="!isCollapsed">Symptom Checker</span>
+        </li>
+
+        <li nz-menu-item (click)="logout()">
+          <span nz-icon nzType="logout"></span>
+          <span *ngIf="!isCollapsed">Logout</span>
+        </li>
+      </ul>
+    </div>
+  </nz-sider>
+
+ <!-- Main -->
+  <nz-layout class="main">
+    <!-- Header -->
+    <nz-header class="header">
+           <div class="header-right">
+        <button nz-button nzType="text">
+          <span nz-icon nzType="bell"></span>
+        </button>
+
+        
+         <button nz-button nzType="text" nz-dropdown [nzDropdownMenu]="userMenu" nzTrigger="click">
+  <span nz-icon nzType="user"></span>
+  <span nz-icon nzType="down"></span>
+</button>
+
+<nz-dropdown-menu #userMenu="nzDropdownMenu">
+  <ul nz-menu>
+    <li nz-menu-item routerLink="/patient/profile">Profile</li>
+    <li nz-menu-item (click)="logout()">Logout</li>
+  </ul>
+</nz-dropdown-menu>
+      </div>
+    </nz-header>
+
+    <!-- Content -->
+    <nz-content class="content">
+      <div class="page">
+        <router-outlet></router-outlet>
+      </div>
+    </nz-content>
+  </nz-layout>
+</nz-layout>

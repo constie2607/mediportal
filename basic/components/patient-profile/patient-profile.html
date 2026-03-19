@@ -1,0 +1,115 @@
+<nz-spin [nzSpinning]="loading">
+  <div class="page">
+
+    <nz-alert
+      *ngIf="!loading && errorMsg"
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="errorMsg">
+    </nz-alert>
+
+    <ng-container *ngIf="!loading && !errorMsg && profile as p">
+
+      <div class="profile-hero">
+        <div class="profile-left">
+          <div class="avatar">
+            <span nz-icon nzType="user"></span>
+          </div>
+
+          <div>
+            <div class="profile-name">{{ p.firstName }} {{ p.lastName }}</div>
+            <div class="profile-sub">Patient ID: {{ p.id }}</div>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button nz-button nzType="primary" (click)="openEditModal()">
+            Edit Profile
+          </button>
+        </div>
+      </div>
+
+      <div class="grid">
+
+        <nz-card nzTitle="Personal Information" class="profile-card">
+          <div class="kv">
+            <div class="k">First Name</div>
+            <div class="v">{{ p.firstName || '—' }}</div>
+
+            <div class="k">Last Name</div>
+            <div class="v">{{ p.lastName || '—' }}</div>
+
+            <div class="k">Email</div>
+            <div class="v">{{ p.email || '—' }}</div>
+
+            <div class="k">Phone</div>
+            <div class="v">{{ p.phoneNumber || '—' }}</div>
+
+            <div class="k">Date of Birth</div>
+            <div class="v">{{ p.dateOfBirth ? (p.dateOfBirth | date:'mediumDate') : '—' }}</div>
+
+            <div class="k">Gender</div>
+            <div class="v">{{ p.gender || '—' }}</div>
+          </div>
+        </nz-card>
+
+        <nz-card nzTitle="Address & Contact" class="profile-card">
+          <div class="kv">
+            <div class="k">Address</div>
+            <div class="v">{{ p.address || '—' }}</div>
+
+            <div class="k">Emergency Contact</div>
+            <div class="v">{{ p.emergencyContactName || '—' }}</div>
+
+            <div class="k">Emergency Phone</div>
+            <div class="v">{{ p.emergencyContactPhone || '—' }}</div>
+          </div>
+        </nz-card>
+
+      </div>
+
+      <nz-card nzTitle="Account Settings" class="profile-card">
+        <div class="settings-actions">
+          <button nz-button nzType="default">Change Password</button>
+          <button nz-button nzType="default">Notification Preferences</button>
+        </div>
+      </nz-card>
+
+      <nz-modal
+        [(nzVisible)]="editModalOpen"
+        nzTitle="Edit Profile"
+        nzOkText="Save Changes"
+        nzCancelText="Cancel"
+        [nzOkLoading]="saving"
+        (nzOnCancel)="closeEditModal()"
+        (nzOnOk)="saveProfile()"
+      >
+        <ng-container *nzModalContent>
+          <div class="modal-form">
+            <label class="field-label">First Name</label>
+            <input nz-input [(ngModel)]="editForm.firstName" />
+
+            <label class="field-label">Last Name</label>
+            <input nz-input [(ngModel)]="editForm.lastName" />
+
+            <label class="field-label">Email</label>
+            <input nz-input [(ngModel)]="editForm.email" />
+
+            <label class="field-label">Phone Number</label>
+            <input nz-input [(ngModel)]="editForm.phoneNumber" />
+
+            <label class="field-label">Address</label>
+            <input nz-input [(ngModel)]="editForm.address" />
+
+            <label class="field-label">Emergency Contact Name</label>
+            <input nz-input [(ngModel)]="editForm.emergencyContactName" />
+
+            <label class="field-label">Emergency Contact Phone</label>
+            <input nz-input [(ngModel)]="editForm.emergencyContactPhone" />
+          </div>
+        </ng-container>
+      </nz-modal>
+
+    </ng-container>
+  </div>
+</nz-spin>

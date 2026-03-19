@@ -1,0 +1,225 @@
+<!-- ai-symptomchecker.html (RESTYLED: chat-first + chips + quick replies as AI bubbles) -->
+
+<nz-card nzTitle="AI Symptom Checker" class="ai-card">
+  <!-- Header / progress -->
+  <div class="chat-header">
+    <div class="progress">
+      <div class="pill" [class.active]="step === 'problem'">Problem</div>
+      <div class="pill" [class.active]="step === 'durationText'">Duration</div>
+      <div class="pill" [class.active]="step === 'severity'">Severity</div>
+      <div class="pill" [class.active]="step === 'durationDays'">Days</div>
+      <div class="pill" [class.active]="step.startsWith('rf_')">Safety</div>
+      <div class="pill" [class.active]="step === 'confirm'">Confirm</div>
+      <div class="pill" [class.active]="step === 'result'">Result</div>
+    </div>
+
+    <div class="meta">
+      <span *ngIf="selectedSymptoms?.length">Selected: {{ selectedSymptoms.length }}</span>
+      <span *ngIf="!selectedSymptoms?.length">No symptoms selected</span>
+    </div>
+  </div>
+
+  <!-- Chat window -->
+  <div id="chat-scroll" class="chat-window">
+    <div
+      *ngFor="let m of messages"
+      class="msg-row"
+      [class.ai]="m.sender === 'ai'"
+      [class.user]="m.sender === 'user'"
+    >
+      <div class="bubble">
+        <div class="text" style="white-space: pre-line;">{{ m.text }}</div>
+        <div class="meta">{{ m.time | date:'shortTime' }}</div>
+      </div>
+    </div>
+
+    <!-- ✅ AI "chips bubble" for structured symptoms -->
+    <div class="msg-row ai" *ngIf="step === 'problem' || step === 'durationText'">
+      <div class="bubble">
+        <div class="text">
+          Tap any related symptoms (optional):
+        </div>
+
+        <div class="chips">
+          <button
+            *ngFor="let s of symptomOptions"
+            nz-button
+            nzType="default"
+            type="button"
+            class="chip"
+            (click)="toggleSymptom(s.key)"
+            [class.selected]="selectedSymptoms.includes(s.key)"
+          >
+            {{ s.label }}
+          </button>
+        </div>
+
+        <div class="mini">
+          {{ selectedSymptoms.length ? ('Selected: ' + selectedSymptoms.join(', ')) : 'Selected: none' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ AI quick replies bubble: severity -->
+    <div class="msg-row ai" *ngIf="step === 'severity'">
+      <div class="bubble">
+        <div class="text">Quick pick (1–10):</div>
+        <div class="quick-replies">
+          <button nz-button nzType="default" type="button" class="chip" (click)="pickSeverity(1)">1</button>
+          <button nz-button nzType="default" type="button" class="chip" (click)="pickSeverity(3)">3</button>
+          <button nz-button nzType="default" type="button" class="chip" (click)="pickSeverity(5)">5</button>
+          <button nz-button nzType="default" type="button" class="chip" (click)="pickSeverity(7)">7</button>
+          <button nz-button nzType="default" type="button" class="chip" (click)="pickSeverity(10)">10</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ AI quick replies bubble: red flags -->
+    <div class="msg-row ai" *ngIf="step === 'rf_chestPain'">
+      <div class="bubble">
+        <div class="text">Do you have chest pain?</div>
+        <div class="quick-replies">
+          <button nz-button nzType="primary" type="button" class="chip" (click)="answerYesNo('chestPain', true)">Yes</button>
+          <button nz-button nzType="default" type="button" class="chip" (click)="answerYesNo('chestPain', false)">No</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg-row ai" *ngIf="step === 'rf_breathingDifficulty'">
+      <div class="bubble">
+        <div class="text">Any breathing difficulty right now?</div>
+        <div class="quick-replies">
+          <button nz-button nzType="primary" type="button" class="chip" (click)="answerYesNo('breathingDifficulty', true)">Yes</button>
+          <button nz-button nzType="default" type="button" class="chip" (click)="answerYesNo('breathingDifficulty', false)">No</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg-row ai" *ngIf="step === 'rf_oneSidedWeakness'">
+      <div class="bubble">
+        <div class="text">Any one-sided weakness or trouble speaking?</div>
+        <div class="quick-replies">
+          <button nz-button nzType="primary" type="button" class="chip" (click)="answerYesNo('oneSidedWeakness', true)">Yes</button>
+          <button nz-button nzType="default" type="button" class="chip" (click)="answerYesNo('oneSidedWeakness', false)">No</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg-row ai" *ngIf="step === 'rf_fainted'">
+      <div class="bubble">
+        <div class="text">Have you fainted / passed out?</div>
+        <div class="quick-replies">
+          <button nz-button nzType="primary" type="button" class="chip" (click)="answerYesNo('fainted', true)">Yes</button>
+          <button nz-button nzType="default" type="button" class="chip" (click)="answerYesNo('fainted', false)">No</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ AI confirm bubble -->
+    <div class="msg-row ai" *ngIf="step === 'confirm'">
+      <div class="bubble">
+        <div class="text">Ready to check your symptoms?</div>
+        <div class="quick-replies">
+          <button nz-button nzType="primary" type="button" class="chip" [nzLoading]="loading" (click)="runCheck()">Check symptoms</button>
+          <button nz-button nzType="default" type="button" class="chip" (click)="reset()">Start over</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ AI result bubble(s) -->
+    <div class="msg-row ai" *ngIf="step === 'result' && result">
+      <div class="bubble result-bubble">
+        <nz-alert
+          *ngIf="urgency === 'EMERGENCY'"
+          nzType="error"
+          nzShowIcon
+          nzMessage="Emergency"
+          nzDescription="Call 999 or go to A&E now. Do not wait for an online response."
+          style="margin-bottom: 12px;"
+        ></nz-alert>
+
+        <nz-alert
+          *ngIf="urgency === 'URGENT'"
+          nzType="warning"
+          nzShowIcon
+          nzMessage="Urgent"
+          nzDescription="You should seek urgent medical advice today."
+          style="margin-bottom: 12px;"
+        ></nz-alert>
+
+        <nz-alert
+          *ngIf="urgency === 'ROUTINE'"
+          nzType="info"
+          nzShowIcon
+          nzMessage="Routine"
+          nzDescription="You may benefit from booking a GP appointment."
+          style="margin-bottom: 12px;"
+        ></nz-alert>
+
+        <nz-alert
+          *ngIf="urgency === 'SELF_CARE'"
+          nzType="success"
+          nzShowIcon
+          nzMessage="Self-care"
+          nzDescription="You can try self-care and monitor your symptoms."
+          style="margin-bottom: 12px;"
+        ></nz-alert>
+
+        <div class="text">
+          <b>Recommended action:</b> {{ result.aiRecommendedAction }}
+        </div>
+
+        <ng-container *ngIf="parseJsonArray(result.aiSelfCareAdvice).length">
+          <div class="section-title">What you can do now</div>
+          <ul class="list">
+            <li *ngFor="let a of parseJsonArray(result.aiSelfCareAdvice)">{{ a }}</li>
+          </ul>
+        </ng-container>
+
+        <ng-container *ngIf="parseJsonArray(result.aiSafetyNet).length">
+          <div class="section-title">When to seek help</div>
+          <ul class="list">
+            <li *ngFor="let s of parseJsonArray(result.aiSafetyNet)">{{ s }}</li>
+          </ul>
+        </ng-container>
+
+        <ng-container *ngIf="parseJsonArray(result.aiRedFlagsTriggered).length">
+          <div class="section-title">Red flags triggered</div>
+          <ul class="list">
+            <li *ngFor="let r of parseJsonArray(result.aiRedFlagsTriggered)">{{ r }}</li>
+          </ul>
+        </ng-container>
+
+        <div class="quick-replies" style="margin-top: 12px;">
+          <button
+            nz-button
+            nzType="primary"
+            type="button"
+            class="chip"
+            *ngIf="urgency === 'URGENT' || urgency === 'ROUTINE'"
+            (click)="bookAppointment()"
+          >
+            Book appointment
+          </button>
+
+          <button nz-button nzType="default" type="button" class="chip" (click)="reset()">Check again</button>
+        </div>
+
+        <div class="disclaimer">
+          This tool does not provide a diagnosis. If symptoms are severe or worsening, seek medical help immediately.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Composer (only for text steps) -->
+  <div class="composer" *ngIf="step === 'problem' || step === 'durationText' || step === 'durationDays'">
+    <input
+      nz-input
+      [placeholder]="step === 'durationDays' ? 'Enter number of days (0–365)' : 'Type your answer…'"
+      [formControl]="input"
+      (keydown.enter)="$event.preventDefault(); sendText()"
+    />
+    <button nz-button nzType="primary" type="button" (click)="sendText()">Send</button>
+  </div>
+</nz-card>

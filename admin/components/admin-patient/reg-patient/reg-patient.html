@@ -1,0 +1,93 @@
+<div class="page">
+  <nz-card nzTitle="Find patient">
+    <form nz-form [formGroup]="searchForm">
+      <div class="grid">
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Email</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input type="email" formControlName="email" placeholder="patient@email.com" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Date of birth</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input type="date" formControlName="dateOfBirth" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="actions">
+        <button nz-button nzType="default" (click)="clear()" type="button">Clear</button>
+        <button nz-button nzType="primary" [nzLoading]="loadingFind" (click)="findPatient()" type="button">
+          Find patient
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <nz-card [nzTitle]="foundPatient ? 'Edit patient' : 'Register patient'">
+    <form nz-form [formGroup]="form">
+      <div class="grid">
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>First name</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input formControlName="firstName" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Last name</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input formControlName="lastName" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Email</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input type="email" formControlName="email" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Date of birth</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input type="date" formControlName="dateOfBirth" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Gender</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <nz-select formControlName="gender" nzPlaceHolder="Select gender">
+              <nz-option nzValue="MALE" nzLabel="Male"></nz-option>
+              <nz-option nzValue="FEMALE" nzLabel="Female"></nz-option>
+              <nz-option nzValue="OTHER" nzLabel="Other"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Phone number</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input formControlName="phoneNumber" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item class="full">
+          <nz-form-label [nzSpan]="24" nzRequired>Address</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input formControlName="address" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="actions">
+        <button nz-button nzType="primary" [nzLoading]="saving" (click)="save()" type="button">
+          {{ foundPatient ? 'Save changes' : 'Register patient' }}
+        </button>
+      </div>
+    </form>
+  </nz-card>
+</div>

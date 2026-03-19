@@ -1,0 +1,174 @@
+<div class="page">
+
+  <!-- Find patient -->
+  <nz-card nzTitle="Find patient" class="search-card">
+    <form nz-form [formGroup]="searchForm">
+      <div class="grid">
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Email</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input type="email" formControlName="email" placeholder="patient@email.com" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Date of birth</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input type="date" formControlName="dateOfBirth" />
+          </nz-form-control>
+        </nz-form-item>
+      </div>
+
+      <div class="actions">
+        <button nz-button nzType="default" type="button" (click)="clear()">
+          Clear
+        </button>
+        <button nz-button nzType="primary" [nzLoading]="loadingFind" type="button" (click)="findPatient()">
+          Find patient
+        </button>
+      </div>
+    </form>
+  </nz-card>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h2>Patient Registry</h2>
+      <p class="page-subtitle">Search, review and manage registered patients.</p>
+    </div>
+
+    <button nz-button nzType="primary" (click)="openNewPatient()">
+      <span nz-icon nzType="plus"></span>
+      New Patient
+    </button>
+  </div>
+
+  <!-- Patient list -->
+  <nz-card nzTitle="Registered patients" class="list-card">
+    <nz-list
+      [nzDataSource]="patients"
+      [nzLoading]="loading"
+      [nzRenderItem]="itemTpl"
+      nzItemLayout="horizontal"
+      class="patient-list"
+    >
+      <ng-template #itemTpl let-p>
+        <nz-list-item class="patient-item">
+          <div class="patient-row">
+
+            <!-- Left side -->
+            <div class="patient-main">
+              <div class="patient-top">
+                <div class="name">{{ p.firstName }} {{ p.lastName }}</div>
+                <nz-tag nzColor="blue">Patient</nz-tag>
+              </div>
+
+              <div class="patient-meta">
+                <span><strong>ID:</strong> {{ p.id }}</span>
+                <span class="dot">•</span>
+                <span><strong>Email:</strong> {{ p.email }}</span>
+                <span class="dot">•</span>
+                <span><strong>Phone:</strong> {{ p.phoneNumber || '—' }}</span>
+              </div>
+
+              <div class="patient-meta second-line">
+                <span><strong>Gender:</strong> {{ p.gender || '—' }}</span>
+                <span class="dot">•</span>
+                <span><strong>DOB:</strong> {{ p.dateOfBirth | date:'mediumDate' }}</span>
+              </div>
+            </div>
+
+            <!-- Right side actions -->
+            <div class="patient-actions">
+              <button nz-button nzType="default" nzSize="small" >
+                View
+              </button>
+
+              <button
+                nz-button
+                nzType="primary"
+                nzSize="small"
+                 [routerLink]="['/admin', p.id, 'medical-history']"
+              >
+                Medical History
+              </button>
+            </div>
+
+          </div>
+        </nz-list-item>
+      </ng-template>
+    </nz-list>
+
+    <nz-empty *ngIf="!loading && !patients?.length"></nz-empty>
+  </nz-card>
+
+  <!-- Register patient modal -->
+  <nz-modal
+    [(nzVisible)]="modalOpen"
+    nzTitle="Register Patient"
+    nzOkText="Register Patient"
+    nzCancelText="Cancel"
+    [nzOkLoading]="saving"
+    (nzOnCancel)="closeModal()"
+    (nzOnOk)="submitPatient()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form [formGroup]="form">
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>First name</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input formControlName="firstName" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Last name</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input formControlName="lastName" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Email</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input type="email" formControlName="email" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Phone number</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input formControlName="phoneNumber" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Gender</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <nz-select formControlName="gender" nzPlaceHolder="Select gender">
+              <nz-option nzValue="MALE" nzLabel="Male"></nz-option>
+              <nz-option nzValue="FEMALE" nzLabel="Female"></nz-option>
+              <nz-option nzValue="OTHER" nzLabel="Other"></nz-option>
+            </nz-select>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Date of birth</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input type="date" formControlName="dateOfBirth" />
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label [nzSpan]="24" nzRequired>Address</nz-form-label>
+          <nz-form-control [nzSpan]="24">
+            <input nz-input formControlName="address" />
+          </nz-form-control>
+        </nz-form-item>
+
+      </form>
+    </ng-container>
+  </nz-modal>
+</div>

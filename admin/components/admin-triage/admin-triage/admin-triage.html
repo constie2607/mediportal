@@ -1,0 +1,249 @@
+<!-- admin-triage.html (NULL-SAFE) -->
+<nz-card nzTitle="Triage Queue">
+  <div style="display:flex; gap:8px; margin-bottom:12px;">
+    <button nz-button [nzType]="tab==='PENDING' ? 'primary' : 'default'" (click)="setTab('PENDING')">
+      Pending
+    </button>
+    <button nz-button [nzType]="tab==='DONE' ? 'primary' : 'default'" (click)="setTab('DONE')">
+      Completed
+    </button>
+  </div>
+
+  <nz-alert
+    *ngIf="!loading && (!rows || rows.length === 0)"
+    nzType="info"
+    nzShowIcon
+    nzMessage="No triage requests yet."
+    style="margin-bottom:12px;"
+  ></nz-alert>
+
+  <nz-table
+    [nzData]="rows || []"
+    [nzLoading]="loading"
+    [nzFrontPagination]="true"
+    nzSize="small"
+  >
+    <thead>
+      <tr>
+        <th>Patient</th>
+        <th>Email</th>
+        <th>Triage ID</th>
+        <th>Problem</th>
+        <th>Created</th>
+        <th>Status</th>
+        <th style="width:120px;">Action</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let r of (rows || [])">
+        <td>
+          {{
+            (((r?.patient?.firstName || '') + ' ' + (r?.patient?.lastName || '')).trim())
+              || '—'
+          }}
+        </td>
+
+        <td>{{ r?.patient?.email || '—' }}</td>
+        <td>{{ r?.triage?.triageId || '—' }}</td>
+        <td>{{ r?.triage?.problem || '—' }}</td>
+        <td>{{ r?.triage?.createdAt ? (r.triage.createdAt | date:'medium') : '—' }}</td>
+
+        <td>
+          <nz-tag [nzColor]="statusTagColor(r?.triage?.status)">
+            {{ r?.triage?.status || '—' }}
+          </nz-tag>
+        </td>
+
+        <td>
+          <button nz-button nzType="link" (click)="openRow(r)" [disabled]="!r?.triage?.triageId">
+            View
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- DRAWER -->
+<nz-drawer
+  [nzVisible]="drawerOpen"
+  nzTitle="Consultation request"
+  nzPlacement="right"
+  [nzWidth]="520"
+  (nzOnClose)="drawerOpen=false"
+>
+  <ng-container *nzDrawerContent>
+    <ng-container *ngIf="selected as s; else emptyState">
+
+      <!-- PATIENT DETAILS -->
+      <nz-card nzTitle="Patient details" nzSize="small">
+        <p>
+          <b>Name:</b>
+          {{
+            (((s?.patient?.firstName || '') + ' ' + (s?.patient?.lastName || '')).trim())
+              || '—'
+          }}
+        </p>
+        <p><b>Email:</b> {{ s?.patient?.email || '—' }}</p>
+        <p><b>Date of birth:</b> {{ s?.patient?.dateOfBirth || '—' }}</p>
+        <p><b>Phone:</b> {{ s?.patient?.phoneNumber || '—' }}</p>
+
+        <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+          <a *ngIf="s?.patient?.email" [href]="'mailto:' + s.patient.email">
+            <button nz-button nzType="default">Email</button>
+          </a>
+
+          <a *ngIf="s?.patient?.phoneNumber" [href]="'tel:' + s.patient.phoneNumber">
+            <button nz-button nzType="primary">Call</button>
+          </a>
+        </div>
+      </nz-card>
+
+      <!-- REQUEST DETAILS -->
+      <nz-card nzTitle="Request details" nzSize="small" style="margin-top:12px;">
+        <p><b>Problem:</b> {{ s?.triage?.problem || '—' }}</p>
+        <p><b>Duration:</b> {{ s?.triage?.duration || '—' }}</p>
+        <p><b>Tried:</b> {{ s?.triage?.tried || '—' }}</p>
+        <p><b>Worried:</b> {{ s?.triage?.worried || '—' }}</p>
+        <p><b>Help wanted:</b> {{ s?.triage?.helpWanted || '—' }}</p>
+        <p><b>Best times:</b> {{ s?.triage?.bestTimes || '—' }}</p>
+
+        <p>
+          <b>Status:</b>
+          <nz-tag [nzColor]="statusTagColor(s?.triage?.status)">
+            {{ s?.triage?.status || '—' }}
+          </nz-tag>
+        </p>
+      </nz-card>
+
+      <!-- CALL HISTORY -->
+      <nz-card nzTitle="Call history" nzSize="small" style="margin-top:12px;">
+        <ng-container *ngIf="(s?.triage?.callLogs?.length || 0) > 0; else noCalls">
+          <ul style="margin:0; padding-left:16px;">
+            <li *ngFor="let c of (s?.triage?.callLogs || [])">
+              <b>{{ c?.calledAt ? (c.calledAt | date:'medium') : '—' }}</b>
+              — {{ c?.note || '—' }}
+            </li>
+          </ul>
+        </ng-container>
+
+        <ng-template #noCalls>
+          <p>No call attempts logged yet.</p>
+        </ng-template>
+      </nz-card>
+
+      <!-- DECISION -->
+      <nz-card nzTitle="Decision" nzSize="small" style="margin-top:12px;">
+        <p><b>Close reason:</b> {{ s?.triage?.closeReason || '—' }}</p>
+        <p><b>Close note:</b> {{ s?.triage?.closeNote || '—' }}</p>
+      </nz-card>
+
+      <!-- ACTIONS -->
+      <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+        <button nz-button nzType="default" (click)="openCallModal()" [disabled]="!s?.triage?.triageId">
+          Log call attempt
+        </button>
+
+        <button nz-button nzType="primary" (click)="goAssignAppointment()" [disabled]="!s?.triage?.triageId">
+          Assign appointment
+        </button>
+
+        <button nz-button nzDanger (click)="openCloseModal()" [disabled]="!s?.triage?.triageId">
+          Close without appointment
+        </button>
+      </div>
+
+    </ng-container>
+
+    <ng-template #emptyState>
+      <nz-card nzTitle="Consultation request" nzSize="small">
+        <p>No triage selected.</p>
+      </nz-card>
+    </ng-template>
+  </ng-container>
+</nz-drawer>
+
+<!-- LOG CALL MODAL -->
+<nz-modal
+  [(nzVisible)]="callModalOpen"
+  nzTitle="Log call attempt"
+  [nzFooter]="null"
+  (nzOnCancel)="callModalOpen=false"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="callForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>Note</nz-form-label>
+        <nz-form-control nzErrorTip="Please enter a note">
+          <textarea
+            nz-input
+            rows="4"
+            formControlName="note"
+            placeholder="e.g. Attempted to call at 08:00, no answer / Spoke to patient, booked appointment."
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+      <button nz-button (click)="callModalOpen=false">Cancel</button>
+      <button
+        nz-button
+        nzType="primary"
+        [disabled]="callForm.invalid"
+        (click)="submitCall()"
+      >
+        Save
+      </button>
+    </div>
+  </ng-container>
+</nz-modal>
+
+
+<!-- CLOSE MODAL -->
+<nz-modal
+  [(nzVisible)]="closeModalOpen"
+  nzTitle="Close without appointment"
+  [nzFooter]="null"
+  (nzOnCancel)="closeModalOpen=false"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="closeForm">
+      <nz-form-item>
+        <nz-form-label nzRequired>Reason</nz-form-label>
+        <nz-form-control nzErrorTip="Reason is required">
+          <nz-select formControlName="reason" nzPlaceHolder="Select a reason">
+            <nz-option nzValue="BOOKINGS_FULL" nzLabel="Bookings full"></nz-option>
+            <nz-option nzValue="APPOINTMENT_NOT_NEEDED" nzLabel="Appointment not needed"></nz-option>
+            <nz-option nzValue="OTHER" nzLabel="Other"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item *ngIf="closeReasonValue === 'OTHER'">
+        <nz-form-label nzRequired>Other note</nz-form-label>
+        <nz-form-control nzErrorTip="Required when reason is Other">
+          <textarea
+            nz-input
+            rows="4"
+            formControlName="note"
+            placeholder="Write your explanation…"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+      <button nz-button (click)="closeModalOpen=false">Cancel</button>
+      <button
+        nz-button
+        nzType="primary"
+        [disabled]="closeForm.invalid || (closeReasonValue === 'OTHER' && !(closeForm.value.note || '').trim())"
+        (click)="submitClose()"
+      >
+        Close
+      </button>
+    </div>
+  </ng-container>
+</nz-modal>

@@ -1,0 +1,254 @@
+<!-- book-appointment.html (UPDATED) -->
+
+<div class="consult-page">
+  <div class="consult-container">
+    <nz-card class="main-card">
+      <div class="top-meta">Form available from 8am to 6:30pm</div>
+
+      <!-- Priority banner (shows that query param is working) -->
+      <nz-alert
+        *ngIf="priority === 'URGENT'"
+        nzType="warning"
+        nzShowIcon
+        nzMessage="Urgent booking recommended"
+        nzDescription="Based on your symptom checker result, please request a consultation as soon as possible."
+        style="margin-top: 12px;"
+      ></nz-alert>
+
+      <nz-alert
+        *ngIf="priority === 'ROUTINE'"
+        nzType="info"
+        nzShowIcon
+        nzMessage="Routine booking"
+        nzDescription="Please request a consultation and we will get back to you during opening hours."
+        style="margin-top: 12px;"
+      ></nz-alert>
+
+      <nz-alert
+        *ngIf="priority === 'SELF_CARE'"
+        nzType="success"
+        nzShowIcon
+        nzMessage="Self-care suggested"
+        nzDescription="You can still request a consultation if you’re concerned."
+        style="margin-top: 12px;"
+      ></nz-alert>
+
+      <nz-alert
+        *ngIf="priority === 'EMERGENCY'"
+        nzType="error"
+        nzShowIcon
+        nzMessage="Emergency"
+        nzDescription="If symptoms are severe or worsening, call 999 or go to A&E now."
+        style="margin-top: 12px;"
+      ></nz-alert>
+
+      <nz-steps [nzCurrent]="step" nzSize="small" class="steps" style="margin-top: 12px;">
+        <nz-step nzTitle="Emergency check"></nz-step>
+        <nz-step nzTitle="Health problem"></nz-step>
+        <nz-step nzTitle="More details"></nz-step>
+        <nz-step nzTitle="Review"></nz-step>
+      </nz-steps>
+
+      <nz-divider></nz-divider>
+
+      <!-- STEP 0: Emergency check -->
+      <ng-container *ngIf="step === 0">
+        <h2 class="page-title">Get help now if this is urgent</h2>
+
+        <nz-alert
+          nzType="error"
+          nzShowIcon
+          nzMessage="Call 999 now if you or someone has any of these:"
+          class="urgent-alert"
+        ></nz-alert>
+
+        <nz-card class="urgent-card">
+          <ul class="urgent-list">
+            <li><b>Signs of a heart attack</b> — chest pain, pressure, heaviness or tightness</li>
+            <li><b>Signs of a stroke</b> — face drooping, can’t lift both arms, speech difficulty</li>
+            <li><b>Severe difficulty breathing</b> — choking, gasping, can’t speak</li>
+            <li><b>Heavy bleeding</b></li>
+            <li><b>Seizure (fit)</b> or unconsciousness</li>
+            <li><b>Sudden swelling</b> of lips, mouth, throat or tongue</li>
+            <li><b>Signs of sepsis</b> — very unwell, mottled/blue skin, stiff neck, confusion</li>
+          </ul>
+        </nz-card>
+
+        <p class="emergency-note">
+          If none of the above apply, you can continue to request a consultation.
+        </p>
+      </ng-container>
+
+      <!-- STEP 1: Health problem -->
+      <ng-container *ngIf="step === 1">
+        <h2 class="page-title">Add information about the health problem</h2>
+
+        <form nz-form [formGroup]="form" class="form">
+          <nz-form-item>
+            <nz-form-label nzRequired>Describe the problem</nz-form-label>
+            <nz-form-control nzErrorTip="Please describe the problem (max 500 characters)">
+              <textarea
+                nz-input
+                rows="3"
+                formControlName="problem"
+                placeholder="Focus on one problem, for example: I have a pain in my lower back"
+              ></textarea>
+              <div class="char-count">{{ count('problem') }}/500</div>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>Attach a photo (optional)</nz-form-label>
+            <nz-form-control>
+              <nz-upload
+                [nzFileList]="fileList"
+                [nzBeforeUpload]="beforeUpload"
+                [nzRemove]="removeFile"
+                nzMultiple
+              >
+                <button nz-button nzType="default">
+                  <span nz-icon nzType="upload"></span>
+                  Attach a photo
+                </button>
+              </nz-upload>
+              <div class="hint">You can attach up to 5 photos</div>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label nzRequired>
+              How long has it been going on for? Is it getting better or worse?
+            </nz-form-label>
+            <nz-form-control nzErrorTip="Please tell us how long it has been going on (max 500 characters)">
+              <textarea
+                nz-input
+                rows="3"
+                formControlName="duration"
+                placeholder="For example: It's been going on for over a week and it's getting worse"
+              ></textarea>
+              <div class="char-count">{{ count('duration') }}/500</div>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+      </ng-container>
+
+      <!-- STEP 2: More details -->
+      <ng-container *ngIf="step === 2">
+        <h2 class="page-title">More details</h2>
+
+        <form nz-form [formGroup]="form" class="form">
+          <nz-form-item>
+            <nz-form-label>Have you tried anything to help?</nz-form-label>
+            <nz-form-control>
+              <textarea
+                nz-input
+                rows="3"
+                formControlName="tried"
+                placeholder="For example: I've tried physio which helps a little"
+              ></textarea>
+              <div class="char-count">{{ count('tried') }}/500</div>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>Is there anything you're particularly worried about? (optional)</nz-form-label>
+            <nz-form-control>
+              <textarea
+                nz-input
+                rows="3"
+                formControlName="worried"
+                placeholder="For example: I'm worried it might affect my work"
+              ></textarea>
+              <div class="char-count">{{ count('worried') }}/500</div>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>How would you like us to help?</nz-form-label>
+            <nz-form-control>
+              <textarea
+                nz-input
+                rows="3"
+                formControlName="helpWanted"
+                placeholder="For example: I would like help managing my pain"
+              ></textarea>
+              <div class="char-count">{{ count('helpWanted') }}/500</div>
+            </nz-form-control>
+          </nz-form-item>
+
+          <nz-form-item>
+            <nz-form-label>When are the best times to contact you? (optional)</nz-form-label>
+            <nz-form-control>
+              <textarea
+                nz-input
+                rows="2"
+                formControlName="bestTimes"
+                placeholder="We can’t guarantee a time and will only contact you during opening hours"
+              ></textarea>
+              <div class="char-count">{{ count('bestTimes') }}/500</div>
+            </nz-form-control>
+          </nz-form-item>
+        </form>
+      </ng-container>
+
+      <!-- STEP 3: Review -->
+      <ng-container *ngIf="step === 3">
+        <h2 class="page-title">Review request before submitting</h2>
+
+        <nz-card class="review-card" nzBordered>
+          <div class="review-row">
+            <div class="label">Describe the problem</div>
+            <div class="value">{{ form.value.problem || '-' }}</div>
+          </div>
+
+          <div class="review-row">
+            <div class="label">How long has it been going on for?</div>
+            <div class="value">{{ form.value.duration || '-' }}</div>
+          </div>
+
+          <div class="review-row">
+            <div class="label">Tried anything to help?</div>
+            <div class="value">{{ form.value.tried || '-' }}</div>
+          </div>
+
+          <div class="review-row">
+            <div class="label">Worried about anything?</div>
+            <div class="value">{{ form.value.worried || '-' }}</div>
+          </div>
+
+          <div class="review-row">
+            <div class="label">How would you like us to help?</div>
+            <div class="value">{{ form.value.helpWanted || '-' }}</div>
+          </div>
+
+          <div class="review-row">
+            <div class="label">Best times to contact</div>
+            <div class="value">{{ form.value.bestTimes || '-' }}</div>
+          </div>
+
+          <div class="review-row">
+            <div class="label">Photos attached</div>
+            <div class="value">
+              {{ fileList.length ? (fileList.length + ' file(s)') : 'No file attached' }}
+            </div>
+          </div>
+        </nz-card>
+      </ng-container>
+
+      <!-- Footer buttons -->
+      <div class="footer-actions">
+        <button nz-button nzType="default" (click)="prev()" [disabled]="step === 0">
+          Back
+        </button>
+
+        <button *ngIf="step < 3" nz-button nzType="primary" (click)="next()">
+          Continue
+        </button>
+
+        <button *ngIf="step === 3" nz-button nzType="primary" [nzLoading]="loading" (click)="submit()">
+          Submit request
+        </button>
+      </div>
+    </nz-card>
+  </div>
+</div>

@@ -1,0 +1,68 @@
+
+<h2>Mediportal Admin</h2>
+
+<div nz-row [nzGutter]="16">
+  <div nz-col nzSpan="6">
+    <nz-card>
+      <div class="stat-label">Total Patients</div>
+      <div class="stat-value">{{ stats.totalPatients }}</div>
+    </nz-card>
+  </div>
+
+
+  <div nz-col nzSpan="6">
+    <nz-card>
+      <div class="stat-label">Appointments Today</div>
+      <div class="stat-value">{{ stats.appointmentsToday }}</div>
+    </nz-card>
+  </div>
+
+  <div nz-col nzSpan="6">
+    <nz-card>
+      <div class="stat-label">Pending Approvals</div>
+      <div class="stat-value">{{ stats.pendingApprovals }}</div>
+    </nz-card>
+  </div>
+
+  <div nz-col nzSpan="6">
+    <nz-card>
+      <div class="stat-label">Lab Results Pending</div>
+      <div class="stat-value">{{ stats.labResultsPending }}</div>
+    </nz-card>
+  </div>
+</div>
+
+<br />
+
+<nz-card nzTitle="Pending Appointment Approvals">
+  <nz-table #t [nzData]="pending" [nzFrontPagination]="false">
+    <thead>
+      <tr>
+        <th>Patient</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of t.data">
+        <td>{{ row.patient }}</td>
+        <td>{{ row.date }}</td>
+        <td>{{ row.time }}</td>
+        <td>{{ row.type }}</td>
+        <td>
+          <nz-tag [nzColor]="row.status === 'APPROVED' ? 'green' : 'orange'">
+            {{ row.status }}
+          </nz-tag>
+        </td>
+        <td>
+          <button nz-button nzType="primary" nzSize="small" (click)="approve(row)" [disabled]="row.status==='APPROVED'">
+            Approve
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>

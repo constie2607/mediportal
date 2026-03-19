@@ -1,0 +1,122 @@
+<div class="page">
+  <div class="page-header">
+    <h2>Staff</h2>
+
+    <button nz-button nzType="primary" (click)="openNewStaff()">
+      <span nz-icon nzType="plus"></span>
+      New Staff
+    </button>
+  </div>
+
+  <nz-card>
+    <nz-list [nzDataSource]="staff" [nzRenderItem]="itemTpl" nzItemLayout="horizontal">
+      <ng-template #itemTpl let-s>
+        <nz-list-item>
+          <nz-list-item-meta
+            [nzTitle]="titleTpl"
+            [nzDescription]="s.email || s.role"
+          >
+            <ng-template #titleTpl>
+              <div class="row">
+                <div class="left">
+                  <div class="name">{{ s.firstName }} {{ s.lastName }}</div>
+                  <div class="sub">{{ s.role }}</div>
+                </div>
+
+                <div class="actions">
+                  <button nz-button nzType="default" nzSize="small" (click)="openEdit(s)">
+                    Edit
+                  </button>
+
+                  <button
+                    nz-button
+                    nzDanger
+                    nzSize="small"
+                    (click)="confirmDelete(s)"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </ng-template>
+          </nz-list-item-meta>
+        </nz-list-item>
+      </ng-template>
+    </nz-list>
+
+    <nz-modal
+  [(nzVisible)]="editOpen"
+  [nzTitle]="mode === 'create' ? 'Register Staff' : 'Edit Staff'"
+  [nzOkText]="mode === 'create' ? 'Register Staff' : 'Save Changes'"
+  [nzCancelText]="'Cancel'"
+  [nzOkLoading]="loading"
+  (nzOnCancel)="closeEdit()"
+  (nzOnOk)="onSubmit()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="editForm">
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>First name</nz-form-label>
+        <nz-form-control [nzSpan]="24">
+          <input nz-input formControlName="firstName" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>Last name</nz-form-label>
+        <nz-form-control [nzSpan]="24">
+          <input nz-input formControlName="lastName" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>Address</nz-form-label>
+        <nz-form-control [nzSpan]="24">
+          <input nz-input formControlName="address" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>Date of birth</nz-form-label>
+        <nz-form-control [nzSpan]="24">
+          <input nz-input type="date" formControlName="dateOfBirth" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24" nzRequired>Email</nz-form-label>
+        <nz-form-control [nzSpan]="24">
+          <input nz-input type="email" formControlName="email" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label [nzSpan]="24">Phone number</nz-form-label>
+        <nz-form-control [nzSpan]="24">
+          <input nz-input formControlName="phoneNumber" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+  <nz-form-label [nzSpan]="24" nzRequired>Role</nz-form-label>
+  <nz-form-control [nzSpan]="24">
+    <nz-select
+      formControlName="role"
+      nzPlaceHolder="Select role"
+    >
+      <nz-option nzValue="ADMIN" nzLabel="Admin"></nz-option>
+      <nz-option nzValue="SUPERADMIN" nzLabel="Super Admin"></nz-option>
+      <nz-option nzValue="NURSE" nzLabel="Nurse"></nz-option>
+      <nz-option nzValue="DOCTOR" nzLabel="Doctor"></nz-option>
+      <nz-option nzValue="RECEPTIONIST" nzLabel="Receptionist"></nz-option>
+    </nz-select>
+  </nz-form-control>
+</nz-form-item>
+
+    </form>
+  </ng-container>
+</nz-modal>
+
+    <nz-empty *ngIf="!staff?.length"></nz-empty>
+  </nz-card>
+</div>

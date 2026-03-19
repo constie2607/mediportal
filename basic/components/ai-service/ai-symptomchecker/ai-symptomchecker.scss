@@ -1,0 +1,146 @@
+/* ai-symptomchecker.scss (RESTYLED: clean chat UI, chips, sticky composer) */
+
+.ai-card {
+  display: block;
+}
+
+.chat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+
+  .progress {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    .pill {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #e5e5e5;
+      opacity: 0.75;
+      user-select: none;
+    }
+
+    .pill.active {
+      opacity: 1;
+      border-color: #cfcfcf;
+      font-weight: 600;
+    }
+  }
+
+  .meta {
+    font-size: 12px;
+    opacity: 0.8;
+    padding-top: 2px;
+    white-space: nowrap;
+  }
+}
+
+.chat-window {
+  height: 520px;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.msg-row {
+  display: flex;
+  margin-bottom: 10px;
+
+  &.ai {
+    justify-content: flex-start;
+  }
+
+  &.user {
+    justify-content: flex-end;
+  }
+
+  .bubble {
+    max-width: 78%;
+    padding: 10px 12px;
+    border-radius: 16px;
+    border: 1px solid #e8e8e8;
+    background: #fff;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+
+    .text {
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .meta {
+      margin-top: 6px;
+      font-size: 11px;
+      opacity: 0.65;
+    }
+  }
+
+  &.user .bubble {
+    border-color: #d9e7ff;
+    background: #f2f7ff;
+  }
+}
+
+.composer {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+
+  position: sticky;
+  bottom: 0;
+  padding-top: 10px;
+  background: #fff;
+
+  input {
+    flex: 1;
+  }
+}
+
+.chips,
+.quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chip {
+  border-radius: 999px;
+}
+
+/* Selected symptom chip */
+.chip.selected {
+  border-color: #7aa7ff !important;
+  background: #e9f1ff !important;
+}
+
+.mini {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.result-bubble {
+  max-width: 90%;
+}
+
+.section-title {
+  margin-top: 12px;
+  font-weight: 700;
+}
+
+.list {
+  margin: 6px 0 0 18px;
+}
+
+.disclaimer {
+  margin-top: 12px;
+  font-size: 12px;
+  opacity: 0.75;
+}

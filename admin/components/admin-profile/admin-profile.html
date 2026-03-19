@@ -1,0 +1,100 @@
+<nz-spin [nzSpinning]="loading">
+  <div class="page">
+
+    <nz-alert
+      *ngIf="!loading && errorMsg"
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="errorMsg">
+    </nz-alert>
+
+    <ng-container *ngIf="!loading && !errorMsg && profile as p">
+
+      <div class="profile-hero">
+        <div class="profile-left">
+          <div class="avatar">
+            <span nz-icon nzType="user"></span>
+          </div>
+
+          <div>
+            <div class="profile-name">{{ p.firstName }} {{ p.lastName }}</div>
+            <div class="profile-sub">Staff ID: {{ p.id }}</div>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button nz-button nzType="primary" (click)="openEditModal()">
+            Edit Profile
+          </button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <nz-card nzTitle="Staff Information" class="profile-card">
+          <div class="kv">
+            <div class="k">First Name</div>
+            <div class="v">{{ p.firstName || '—' }}</div>
+
+            <div class="k">Last Name</div>
+            <div class="v">{{ p.lastName || '—' }}</div>
+
+            <div class="k">Email</div>
+            <div class="v">{{ p.email || '—' }}</div>
+
+            <div class="k">Phone</div>
+            <div class="v">{{ p.phoneNumber || '—' }}</div>
+
+            <div class="k">Role</div>
+            <div class="v">{{ p.role || '—' }}</div>
+
+            <div class="k">Department</div>
+            <div class="v">{{ p.department || '—' }}</div>
+          </div>
+        </nz-card>
+
+        <nz-card nzTitle="Address" class="profile-card">
+          <div class="kv">
+            <div class="k">Address</div>
+            <div class="v">{{ p.address || '—' }}</div>
+          </div>
+        </nz-card>
+      </div>
+
+      <nz-card nzTitle="Account Settings" class="profile-card">
+        <div class="settings-actions">
+          <button nz-button nzType="default">Change Password</button>
+        </div>
+      </nz-card>
+
+      <nz-modal
+        [(nzVisible)]="editModalOpen"
+        nzTitle="Edit Profile"
+        nzOkText="Save Changes"
+        nzCancelText="Cancel"
+        [nzOkLoading]="saving"
+        (nzOnCancel)="closeEditModal()"
+        (nzOnOk)="saveProfile()"
+      >
+        <ng-container *nzModalContent>
+          <div class="modal-form">
+            <label class="field-label">First Name</label>
+            <input nz-input [(ngModel)]="editForm.firstName" />
+
+            <label class="field-label">Last Name</label>
+            <input nz-input [(ngModel)]="editForm.lastName" />
+
+            <label class="field-label">Email</label>
+            <input nz-input [(ngModel)]="editForm.email" />
+
+            <label class="field-label">Phone Number</label>
+            <input nz-input [(ngModel)]="editForm.phoneNumber" />
+
+            <label class="field-label">Address</label>
+            <input nz-input [(ngModel)]="editForm.address" />
+          </div>
+        </ng-container>
+      </nz-modal>
+
+    </ng-container>
+  </div>
+</nz-spin>

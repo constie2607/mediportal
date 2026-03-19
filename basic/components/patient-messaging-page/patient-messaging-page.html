@@ -1,0 +1,53 @@
+<nz-card nzTitle="Messages">
+  <nz-spin [nzSpinning]="loading">
+    <nz-list [nzDataSource]="messages" [nzRenderItem]="item">
+      <ng-template #item let-m>
+      <nz-list-item (click)="openMessage(m)" style="cursor:pointer;">
+          <nz-list-item-meta
+            [nzTitle]="titleTpl"
+            [nzDescription]="preview(m.body)">
+          </nz-list-item-meta>
+
+          <ng-template #titleTpl>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span>{{ m.subject }}</span>
+              <nz-tag *ngIf="!m.readFlag" nzColor="blue">NEW</nz-tag>
+              <span style="margin-left:auto; opacity:.7; font-size:12px;">
+                {{ m.createdAt | date:'medium' }}
+              </span>
+            </div>
+          </ng-template>
+        </nz-list-item>
+      </ng-template>
+    </nz-list>
+
+    <div *ngIf="!loading && messages.length === 0" style="opacity:.7; padding: 12px;">
+      No messages yet.
+    </div>
+  </nz-spin>
+</nz-card>
+
+<nz-drawer
+  [nzVisible]="drawerOpen"
+  nzTitle="Message"
+  nzPlacement="right"
+  [nzWidth]="420"
+  (nzOnClose)="closeDrawer()">
+
+  <ng-container *ngIf="selected as m">
+    <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom: 10px;">
+      <div>
+        <div style="font-weight:600;">{{ m.subject }}</div>
+        <div style="opacity:.7; font-size:12px;">From: {{ m.fromUser }}</div>
+      </div>
+      <div style="opacity:.7; font-size:12px;">{{ m.createdAt | date:'medium' }}</div>
+    </div>
+
+    <pre style="white-space: pre-wrap; margin:0;">{{ m.body }}</pre>
+
+    <div *ngIf="m.appointmentId" style="margin-top: 14px;">
+      <nz-tag>Appointment: {{ m.appointmentId }}</nz-tag>
+    </div>
+  </ng-container>
+
+</nz-drawer>

@@ -1,0 +1,73 @@
+<div class="auth-page">
+  <nz-card class="auth-card" nzBordered>
+    
+    <div class="auth-header">
+      <h2>Activate your MediPortal account</h2>
+      <p>
+        Enter your Patient ID and date of birth to set your password and access your account.
+      </p>
+    </div>
+
+    <form nz-form [formGroup]="form" (ngSubmit)="submit()">
+
+      <nz-form-item>
+        <nz-form-label nzRequired>User ID</nz-form-label>
+        <nz-form-control nzErrorTip="User ID is required">
+          <input
+            nz-input
+            formControlName="id"
+            placeholder="e.g. pat12345"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Date of birth</nz-form-label>
+        <nz-form-control nzErrorTip="Date of birth is required">
+          <input
+            nz-input
+            type="date"
+            formControlName="dateOfBirth"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Password</nz-form-label>
+        <nz-form-control nzErrorTip="Minimum 8 characters">
+          <input
+            nz-input
+            type="password"
+            formControlName="password"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Confirm password</nz-form-label>
+        <nz-form-control nzErrorTip="Passwords must match">
+          <input
+            nz-input
+            type="password"
+            formControlName="confirmPassword"
+          />
+        </nz-form-control>
+      </nz-form-item>
+
+      <button
+        nz-button
+        nzType="primary"
+        nzBlock
+        [nzLoading]="loading"
+        htmlType="submit"
+      >
+        Activate account
+      </button>
+
+      <div class="auth-footer">
+        <a routerLink="/login">Already activated? Log in</a>
+      </div>
+
+    </form>
+  </nz-card>
+</div>

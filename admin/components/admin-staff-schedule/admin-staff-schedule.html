@@ -1,0 +1,141 @@
+<nz-card nzTitle="Doctor Availability">
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button nz-button nzType="default" (click)="prevWeek()">← Prev</button>
+      <b>
+        Week of {{ days[0] | date:'mediumDate' }} – {{ days[4] | date:'mediumDate' }}
+      </b>
+      <button nz-button nzType="default" (click)="nextWeek()">Next →</button>
+    </div>
+
+    <!-- IMPORTANT: open the same modal flag used by the modal -->
+    <button nz-button nzType="primary" (click)="openAvailabilityModal(null)">
+      Assign availability / time off
+    </button>
+  </div>
+
+  <nz-table
+    style="margin-top:12px;"
+    [nzData]="doctors"
+    [nzLoading]="loading"
+    [nzFrontPagination]="false"
+    nzSize="small"
+  >
+    <thead>
+      <tr>
+        <th style="width:220px;">Doctor</th>
+        <th *ngFor="let d of days">
+          {{ d | date:'EEE' }}<br />
+          <span style="font-weight:400; opacity:0.8;">{{ d | date:'dd MMM' }}</span>
+        </th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let doc of doctors">
+        <td><b>{{ doc.name }}</b></td>
+
+        <td *ngFor="let d of days" style="vertical-align:top;">
+          <ng-container *ngIf="cell(doc.id, d) as s; else empty">
+            <ng-container *ngIf="s.type === 'TIME_OFF'; else avail">
+              <nz-tag nzColor="red">Time off</nz-tag>
+              <div style="font-size:12px; opacity:0.8;" *ngIf="s.note">{{ s.note }}</div>
+            </ng-container>
+
+            <ng-template #avail>
+              <nz-tag nzColor="green">
+                {{ (s.startTime || '').slice(0,5) }}–{{ (s.endTime || '').slice(0,5) }}
+              </nz-tag>
+              <div style="font-size:12px; opacity:0.8;" *ngIf="s.note">{{ s.note }}</div>
+            </ng-template>
+          </ng-container>
+
+          <ng-template #empty>
+            <span style="opacity:0.5;">—</span>
+          </ng-template>
+        </td>
+      </tr>
+    </tbody>
+  </nz-table>
+</nz-card>
+
+<!-- ASSIGN MODAL -->
+<nz-modal
+  [(nzVisible)]="availabilityModalOpen"
+  nzTitle="Assign availability / time off"
+  [nzOkDisabled]="availabilityForm.invalid"
+  (nzOnOk)="submitAvailability()"
+  (nzOnCancel)="closeAvailabilityModal()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="availabilityForm">
+
+      <!-- Doctor -->
+      <nz-form-item>
+        <nz-form-label nzRequired>Doctor</nz-form-label>
+        <nz-form-control nzErrorTip="Required">
+          <nz-select formControlName="doctorId" nzPlaceHolder="Select doctor">
+            <nz-option *ngFor="let d of doctors" [nzValue]="d.id" [nzLabel]="d.name"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <!-- Type -->
+      <nz-form-item>
+        <nz-form-label nzRequired>Type</nz-form-label>
+        <nz-form-control nzErrorTip="Required">
+          <nz-select formControlName="type">
+            <nz-option nzValue="AVAILABLE" nzLabel="Available"></nz-option>
+            <nz-option nzValue="TIME_OFF" nzLabel="Time off"></nz-option>
+          </nz-select>
+        </nz-form-control>
+      </nz-form-item>
+
+      <!-- Days (Mon-Fri checkboxes) -->
+      <nz-form-item>
+        <nz-form-label nzRequired>Days</nz-form-label>
+        <nz-form-control nzErrorTip="Pick at least one day">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <label nz-checkbox *ngFor="let d of dayChecks" [(ngModel)]="d.checked" [ngModelOptions]="{ standalone: true }">
+              {{ d.label }}
+            </label>
+          </div>
+          <div style="font-size:12px; opacity:.75; margin-top:6px;">
+            Applies to the current week shown above.
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+
+      <!-- Times (only when AVAILABLE) -->
+      <ng-container *ngIf="availabilityForm.get('type')?.value === 'AVAILABLE'">
+        <nz-form-item>
+          <nz-form-label nzRequired>Start</nz-form-label>
+          <nz-form-control nzErrorTip="Required">
+            <nz-time-picker formControlName="start" nzFormat="HH:mm"></nz-time-picker>
+          </nz-form-control>
+        </nz-form-item>
+
+        <nz-form-item>
+          <nz-form-label nzRequired>End</nz-form-label>
+          <nz-form-control nzErrorTip="Required">
+            <nz-time-picker formControlName="end" nzFormat="HH:mm"></nz-time-picker>
+          </nz-form-control>
+        </nz-form-item>
+      </ng-container>
+
+      <!-- Note -->
+      <nz-form-item>
+        <nz-form-label>Note</nz-form-label>
+        <nz-form-control>
+          <textarea
+            nz-input
+            rows="3"
+            formControlName="note"
+            placeholder="Optional (e.g. annual leave / training / late start)"
+          ></textarea>
+        </nz-form-control>
+      </nz-form-item>
+
+    </form>
+  </ng-container>
+</nz-modal>

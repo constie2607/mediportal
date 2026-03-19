@@ -1,0 +1,235 @@
+<nz-spin [nzSpinning]="loading">
+  <div class="page">
+
+    <nz-alert
+      *ngIf="!loading && errorMsg"
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="errorMsg">
+    </nz-alert>
+
+    <ng-container *ngIf="!loading && !errorMsg && data as d">
+
+      <div class="summary-strip">
+        <div class="left">
+          <div class="title">My Medications</div>
+          <div class="subtitle">View your medicines and request prescriptions.</div>
+        </div>
+
+        <div class="right">
+          <div class="chip">
+            <span class="label">Active medications</span>
+            <nz-badge [nzCount]="activeMedications.length"></nz-badge>
+          </div>
+
+          <div class="chip">
+            <span class="label">Pending requests</span>
+            <nz-badge [nzCount]="pendingRequests.length"></nz-badge>
+          </div>
+
+          <div class="chip" *ngIf="latestRequestDate as lrd">
+            <span class="label">Last request</span>
+            <span class="value">{{ lrd | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-actions">
+        <button nz-button nzType="primary" (click)="openPrescriptionRequestModal()">
+          Request Prescription
+        </button>
+      </div>
+
+      <nz-card class="main-card" nzBordered>
+        <nz-tabset>
+
+          <!-- CURRENT MEDICATIONS -->
+          <nz-tab nzTitle="Current Medications">
+            <ng-container *ngIf="activeMedications.length; else emptyCurrentMeds">
+              <nz-list nzSize="small">
+                <nz-list-item *ngFor="let m of activeMedications">
+                  <div class="med-row">
+                    <div class="med-main">
+                      <div class="med-name">{{ m.medicationName }}</div>
+                      <div class="med-sub" *ngIf="m.dosage || m.frequency">
+                        {{ m.dosage || '—' }}
+                        <span *ngIf="m.dosage && m.frequency">•</span>
+                        {{ m.frequency || '' }}
+                      </div>
+                      <div class="med-sub" *ngIf="m.instructions">{{ m.instructions }}</div>
+                      <div class="med-sub" *ngIf="m.startDate">Started: {{ m.startDate | date }}</div>
+                    </div>
+
+                    <div class="med-right actions-col">
+                      <nz-tag [nzColor]="medicationStatusColor(m.status)">
+                        {{ m.status || 'ACTIVE' }}
+                      </nz-tag>
+
+                      <button
+                        nz-button
+                        nzType="default"
+                        nzSize="small"
+                        (click)="openPrescriptionRequestModal(m)">
+                        Request Prescription
+                      </button>
+                    </div>
+                  </div>
+                </nz-list-item>
+              </nz-list>
+            </ng-container>
+
+            <ng-template #emptyCurrentMeds>
+              <div class="empty-state">
+                <div class="empty-title">No current medications</div>
+                <div class="empty-text">You do not currently have any active medications listed.</div>
+              </div>
+            </ng-template>
+          </nz-tab>
+
+          <!-- PAST MEDICATIONS -->
+          <nz-tab nzTitle="Past Medications">
+            <ng-container *ngIf="pastMedications.length; else emptyPastMeds">
+              <nz-table #pastMedTable [nzData]="pastMedications" nzSize="small" [nzFrontPagination]="false">
+                <thead>
+                  <tr>
+                    <th>Medication</th>
+                    <th>Dosage</th>
+                    <th>Frequency</th>
+                    <th>Status</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Request</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let m of pastMedTable.data">
+                    <td>{{ m.medicationName }}</td>
+                    <td>{{ m.dosage || '—' }}</td>
+                    <td>{{ m.frequency || '—' }}</td>
+                    <td>
+                      <nz-tag [nzColor]="medicationStatusColor(m.status)">
+                        {{ m.status || '—' }}
+                      </nz-tag>
+                    </td>
+                    <td>{{ m.startDate ? (m.startDate | date) : '—' }}</td>
+                    <td>{{ m.endDate ? (m.endDate | date) : '—' }}</td>
+                    <td>
+                      <button
+                        nz-button
+                        nzType="default"
+                        nzSize="small"
+                        (click)="openPrescriptionRequestModal(m)">
+                        Request Again
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </nz-table>
+            </ng-container>
+
+            <ng-template #emptyPastMeds>
+              <div class="empty-state">
+                <div class="empty-title">No past medications</div>
+                <div class="empty-text">Your previous medications will appear here.</div>
+              </div>
+            </ng-template>
+          </nz-tab>
+
+          <!-- PRESCRIPTION REQUESTS -->
+          <nz-tab nzTitle="Prescription Requests">
+            <div class="request-head">
+              <button nz-button nzType="primary" nzSize="small" (click)="openPrescriptionRequestModal()">
+                New Request
+              </button>
+            </div>
+
+            <ng-container *ngIf="d.prescriptionRequests?.length; else emptyRequests">
+              <nz-table #reqTable [nzData]="d.prescriptionRequests || []" nzSize="small" [nzFrontPagination]="false">
+                <thead>
+                  <tr>
+                    <th>Reference</th>
+                    <th>Medication</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Requested</th>
+                    <th>Admin Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of reqTable.data">
+                    <td>{{ r.requestRef || ('REQ-' + r.id) }}</td>
+                    <td>{{ r.medicationName }}</td>
+                    <td>{{ r.requestType || '—' }}</td>
+                    <td>
+                      <nz-tag [nzColor]="requestStatusColor(r.status)">
+                        {{ r.status || 'PENDING' }}
+                      </nz-tag>
+                    </td>
+                    <td>{{ r.requestedAt ? (r.requestedAt | date:'medium') : '—' }}</td>
+                    <td>{{ r.adminNote || '—' }}</td>
+                  </tr>
+                </tbody>
+              </nz-table>
+            </ng-container>
+
+            <ng-template #emptyRequests>
+              <div class="empty-state">
+                <div class="empty-title">No prescription requests yet</div>
+                <div class="empty-text">When you request a prescription, it will show up here.</div>
+              </div>
+            </ng-template>
+          </nz-tab>
+
+        </nz-tabset>
+      </nz-card>
+
+      <!-- Request Prescription Modal -->
+      <nz-modal
+        [(nzVisible)]="prescriptionRequestModalOpen"
+        nzTitle="Request Prescription"
+        nzOkText="Submit Request"
+        nzCancelText="Cancel"
+        [nzOkLoading]="savingPrescriptionRequest"
+        (nzOnCancel)="closePrescriptionRequestModal()"
+        (nzOnOk)="savePrescriptionRequest()"
+      >
+        <ng-container *nzModalContent>
+          <div class="modal-form">
+            <label class="field-label">Medication</label>
+            <nz-select
+              [(ngModel)]="prescriptionRequestForm.medicationName"
+              nzPlaceHolder="Select a medication from your record">
+              <nz-option
+                *ngFor="let m of requestableMedications"
+                [nzValue]="m.medicationName"
+                [nzLabel]="m.medicationName + (m.dosage ? ' - ' + m.dosage : '')">
+              </nz-option>
+            </nz-select>
+
+            <label class="field-label">Requested dosage</label>
+            <input
+              nz-input
+              [(ngModel)]="prescriptionRequestForm.requestedDosage"
+              placeholder="e.g. 50mg"
+            />
+
+            <label class="field-label">Request type</label>
+            <nz-select [(ngModel)]="prescriptionRequestForm.requestType" nzPlaceHolder="Select request type">
+              <nz-option nzValue="REPEAT" nzLabel="Repeat"></nz-option>
+              <nz-option nzValue="NEW" nzLabel="New"></nz-option>
+            </nz-select>
+
+            <label class="field-label">Reason</label>
+            <textarea
+              nz-input
+              rows="4"
+              [(ngModel)]="prescriptionRequestForm.reason"
+              placeholder="Tell us why you need this prescription"
+            ></textarea>
+          </div>
+        </ng-container>
+      </nz-modal>
+
+    </ng-container>
+  </div>
+</nz-spin>

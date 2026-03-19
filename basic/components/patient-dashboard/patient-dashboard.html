@@ -1,0 +1,118 @@
+<h2>Patient Dashboard</h2>
+
+<div nz-row [nzGutter]="16">
+  <div nz-col nzSpan="6">
+    <nz-card>
+      <div class="stat-label">Next Appointment</div>
+      <div class="stat-value">{{ quick.nextAppointment }}</div>
+    </nz-card>
+  </div>
+
+  <div nz-col nzSpan="6">
+    <nz-card>
+      <div class="stat-label">Unread Messages</div>
+      <div class="stat-value">{{ quick.unreadMessages }}</div>
+    </nz-card>
+  </div>
+
+  <div nz-col nzSpan="6">
+    <nz-card>
+      <div class="stat-label">New Lab Results</div>
+      <div class="stat-value">{{ quick.newLabResults }}</div>
+    </nz-card>
+  </div>
+
+  <div nz-col nzSpan="6">
+    <nz-card>
+      <div class="stat-label">Active Prescriptions</div>
+      <div class="stat-value">{{ quick.activePrescriptions }}</div>
+    </nz-card>
+  </div>
+</div>
+
+<br />
+
+<div nz-row [nzGutter]="16" class="cta-row">
+  <!-- CTA 1: Book Consultation -->
+  <div nz-col nzXs="24" nzMd="12">
+    <nz-card class="cta-card" nzBordered="false">
+      <div class="cta-content">
+        <div class="cta-left">
+          <div class="cta-title">Need to see a GP?</div>
+          <div class="cta-subtitle">Book a consultation in under a minute.</div>
+        </div>
+
+        <button
+          nz-button
+          nzType="primary"
+          nzSize="large"
+          class="cta-button"
+          [routerLink]="['/patient/book-appointment']"
+        >
+          <span nz-icon nzType="calendar"></span>
+          Book consultation
+        </button>
+      </div>
+    </nz-card>
+  </div>
+
+  <!-- CTA 2: AI Symptom Checker -->
+  <div nz-col nzXs="24" nzMd="12">
+    <nz-card class="cta-card" nzBordered="false">
+      <div class="cta-content">
+        <div class="cta-left">
+          <div class="cta-title">Not sure how urgent it is?</div>
+          <div class="cta-subtitle">Check your symptoms with AI first.</div>
+        </div>
+
+        <button
+          nz-button
+          nzType="default"
+          nzSize="large"
+          class="cta-button"
+          [routerLink]="['/patient/ai-symptomchecker']"
+        >
+          <span nz-icon nzType="robot"></span>
+          Check symptoms with AI
+        </button>
+      </div>
+    </nz-card>
+  </div>
+</div>
+
+<nz-card nzTitle="Your Latest Request">
+  <ng-container *ngIf="latestRequest; else noReq">
+    <nz-table
+      #t
+      [nzData]="[latestRequest]"
+      [nzFrontPagination]="false"
+      nzSize="small"
+    >
+      <thead>
+        <tr>
+          <th>Problem</th>
+          <th>Date Created</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let row of t.data">
+          <td>{{ row.problem }}</td>
+          <td>{{ row.createdAt | date:'medium' }}</td>
+          <td>
+            <nz-tag [nzColor]="row.status === 'PENDING' ? 'orange' : 'blue'">
+              {{ row.status }}
+            </nz-tag>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </ng-container>
+
+  <ng-template #noReq>
+    <div>No requests yet.</div>
+  </ng-template>
+</nz-card>
+
+

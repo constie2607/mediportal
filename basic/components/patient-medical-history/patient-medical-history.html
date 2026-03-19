@@ -1,0 +1,397 @@
+<nz-spin [nzSpinning]="loading">
+  <div class="page">
+
+    <nz-alert
+      *ngIf="!loading && errorMsg"
+      nzType="error"
+      nzShowIcon
+      [nzMessage]="errorMsg">
+    </nz-alert>
+
+    <ng-container *ngIf="!loading && !errorMsg && data as d">
+
+      <div class="summary-strip">
+        <div class="left">
+          <div class="title">My Medical History</div>
+          <div class="subtitle">View your health record and prescription requests.</div>
+        </div>
+
+        <div class="right">
+          <div class="chip">
+            <span class="label">Allergies</span>
+            <nz-badge [nzCount]="allergyCount"></nz-badge>
+          </div>
+
+          <div class="chip">
+            <span class="label">Active conditions</span>
+            <nz-badge [nzCount]="activeConditionCount"></nz-badge>
+          </div>
+
+          <div class="chip">
+            <span class="label">Active medications</span>
+            <nz-badge [nzCount]="activeMedications.length"></nz-badge>
+          </div>
+
+          <div class="chip">
+            <span class="label">Pending requests</span>
+            <nz-badge [nzCount]="pendingRequests.length"></nz-badge>
+          </div>
+        </div>
+      </div>
+
+      <nz-alert
+        *ngIf="d.allergies.length > 0"
+        nzType="warning"
+        nzShowIcon
+        nzMessage="Allergy warning"
+        [nzDescription]="allergyDesc">
+      </nz-alert>
+
+      <ng-template #allergyDesc>
+        <div class="allergy-row">
+          <ng-container *ngFor="let a of d.allergies">
+            <nz-tag [nzColor]="severityTagColor(a.severity)">
+              {{ a.allergen }} ({{ a.severity }})
+            </nz-tag>
+          </ng-container>
+        </div>
+      </ng-template>
+
+      <nz-card class="main-card" nzBordered>
+        <nz-tabset>
+
+          <!-- SUMMARY -->
+          <nz-tab nzTitle="Summary">
+            <div class="grid">
+
+              <nz-card nzTitle="My Allergies" class="mini-card">
+                <ng-container *ngIf="d.allergies.length; else emptyAllergies">
+                  <nz-list nzSize="small">
+                    <nz-list-item *ngFor="let a of d.allergies">
+                      <div class="row">
+                        <div>
+                          <div class="primary">{{ a.allergen }}</div>
+                          <div class="secondary" *ngIf="a.reaction">Reaction: {{ a.reaction }}</div>
+                        </div>
+                        <nz-tag [nzColor]="severityTagColor(a.severity)">{{ a.severity }}</nz-tag>
+                      </div>
+                    </nz-list-item>
+                  </nz-list>
+                </ng-container>
+                <ng-template #emptyAllergies>
+                  <div class="empty muted">No allergies recorded.</div>
+                </ng-template>
+              </nz-card>
+
+              <nz-card nzTitle="Current Conditions" class="mini-card">
+                <ng-container *ngIf="d.conditions.length; else emptyConditions">
+                  <nz-list nzSize="small">
+                    <nz-list-item *ngFor="let c of d.conditions">
+                      <div class="row">
+                        <div>
+                          <div class="primary">{{ c.name }}</div>
+                          <div class="secondary" *ngIf="c.diagnosedDate">Diagnosed: {{ c.diagnosedDate | date }}</div>
+                        </div>
+                        <nz-tag *ngIf="c.status" [nzColor]="(c.status || '').toUpperCase() === 'ACTIVE' ? 'blue' : 'default'">
+                          {{ c.status }}
+                        </nz-tag>
+                      </div>
+                    </nz-list-item>
+                  </nz-list>
+                </ng-container>
+                <ng-template #emptyConditions>
+                  <div class="empty muted">No conditions recorded.</div>
+                </ng-template>
+              </nz-card>
+
+              <nz-card class="mini-card">
+                <div nz-card-title class="card-title-row">
+                  <span>Current Medications</span>
+                  <button nz-button nzType="primary" nzSize="small" (click)="openPrescriptionRequestModal()">
+                    Request Prescription
+                  </button>
+                </div>
+
+                <ng-container *ngIf="activeMedications.length; else emptyCurrentMeds">
+                  <nz-list nzSize="small">
+                    <nz-list-item *ngFor="let m of activeMedications">
+                      <div class="row full-row">
+                        <div>
+                          <div class="primary">{{ m.medicationName }}</div>
+                          <div class="secondary" *ngIf="m.dosage || m.frequency">
+                            {{ m.dosage || '—' }}
+                            <span *ngIf="m.dosage && m.frequency">•</span>
+                            {{ m.frequency || '' }}
+                          </div>
+                          <div class="secondary" *ngIf="m.instructions">{{ m.instructions }}</div>
+                        </div>
+
+                        <div class="right-actions">
+                          <nz-tag [nzColor]="medicationStatusColor(m.status)">
+                            {{ m.status || 'ACTIVE' }}
+                          </nz-tag>
+
+                          <button nz-button nzType="default" nzSize="small" (click)="openPrescriptionRequestModal(m)">
+                            Request
+                          </button>
+                        </div>
+                      </div>
+                    </nz-list-item>
+                  </nz-list>
+                </ng-container>
+
+                <ng-template #emptyCurrentMeds>
+                  <div class="empty muted">No current medications recorded.</div>
+                </ng-template>
+              </nz-card>
+
+              <nz-card nzTitle="Lifestyle / Social History" class="mini-card">
+                <ng-container *ngIf="d.socialHistory; else emptySocial">
+                  <div class="kv">
+                    <div class="k">Smoking</div>
+                    <div class="v">{{ d.socialHistory?.smokingStatus || '—' }}</div>
+
+                    <div class="k">Alcohol</div>
+                    <div class="v">{{ d.socialHistory?.alcoholUse || '—' }}</div>
+
+                    <div class="k">Exercise</div>
+                    <div class="v">{{ d.socialHistory?.exerciseLevel || '—' }}</div>
+
+                    <div class="k">Occupation</div>
+                    <div class="v">{{ d.socialHistory?.occupation || '—' }}</div>
+
+                    <div class="k">Notes</div>
+                    <div class="v">{{ d.socialHistory?.notes || '—' }}</div>
+                  </div>
+                </ng-container>
+                <ng-template #emptySocial>
+                  <div class="empty muted">No social history recorded.</div>
+                </ng-template>
+              </nz-card>
+
+            </div>
+          </nz-tab>
+
+          <!-- HISTORY -->
+          <nz-tab nzTitle="History">
+            <div class="stack">
+
+              <nz-card nzTitle="Past Medications" class="section-card">
+                <ng-container *ngIf="pastMedications.length; else emptyPastMeds">
+                  <nz-table #pastMedTable [nzData]="pastMedications" nzSize="small" [nzFrontPagination]="false">
+                    <thead>
+                      <tr>
+                        <th>Medication</th>
+                        <th>Dosage</th>
+                        <th>Frequency</th>
+                        <th>Status</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Request</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let m of pastMedTable.data">
+                        <td>{{ m.medicationName }}</td>
+                        <td>{{ m.dosage || '—' }}</td>
+                        <td>{{ m.frequency || '—' }}</td>
+                        <td>
+                          <nz-tag [nzColor]="medicationStatusColor(m.status)">
+                            {{ m.status || '—' }}
+                          </nz-tag>
+                        </td>
+                        <td>{{ m.startDate ? (m.startDate | date) : '—' }}</td>
+                        <td>{{ m.endDate ? (m.endDate | date) : '—' }}</td>
+                        <td>
+                          <button nz-button nzType="default" nzSize="small" (click)="openPrescriptionRequestModal(m)">
+                            Request Again
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </nz-table>
+                </ng-container>
+                <ng-template #emptyPastMeds>
+                  <div class="empty muted">No past medications recorded.</div>
+                </ng-template>
+              </nz-card>
+
+              <nz-card nzTitle="Procedures / Surgeries" class="section-card">
+                <ng-container *ngIf="d.procedures.length; else emptyProcedures">
+                  <nz-table #procTable [nzData]="d.procedures" nzSize="small" [nzFrontPagination]="false">
+                    <thead>
+                      <tr>
+                        <th>Procedure</th>
+                        <th>Date</th>
+                        <th>Hospital</th>
+                        <th>Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let p of procTable.data">
+                        <td>{{ p.procedureName }}</td>
+                        <td>{{ p.procedureDate ? (p.procedureDate | date) : '—' }}</td>
+                        <td>{{ p.hospital || '—' }}</td>
+                        <td class="muted">{{ p.notes || '—' }}</td>
+                      </tr>
+                    </tbody>
+                  </nz-table>
+                </ng-container>
+                <ng-template #emptyProcedures>
+                  <div class="empty muted">No procedures recorded.</div>
+                </ng-template>
+              </nz-card>
+
+              <nz-card nzTitle="Family History" class="section-card">
+                <ng-container *ngIf="d.familyHistory.length; else emptyFamily">
+                  <nz-table #famTable [nzData]="d.familyHistory" nzSize="small" [nzFrontPagination]="false">
+                    <thead>
+                      <tr>
+                        <th>Relative</th>
+                        <th>Condition</th>
+                        <th>Age of onset</th>
+                        <th>Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let f of famTable.data">
+                        <td>{{ f.relative }}</td>
+                        <td>{{ f.conditionName }}</td>
+                        <td>{{ f.ageOfOnset ?? '—' }}</td>
+                        <td class="muted">{{ f.notes || '—' }}</td>
+                      </tr>
+                    </tbody>
+                  </nz-table>
+                </ng-container>
+                <ng-template #emptyFamily>
+                  <div class="empty muted">No family history recorded.</div>
+                </ng-template>
+              </nz-card>
+
+            </div>
+          </nz-tab>
+
+          <!-- REQUESTS -->
+          <nz-tab nzTitle="Prescription Requests">
+            <div class="request-head">
+              <button nz-button nzType="primary" nzSize="small" (click)="openPrescriptionRequestModal()">
+                New Request
+              </button>
+            </div>
+
+            <ng-container *ngIf="data?.prescriptionRequests?.length; else emptyRequests">
+              <nz-table #reqTable [nzData]="data?.prescriptionRequests || []" nzSize="small" [nzFrontPagination]="false">
+                <thead>
+                  <tr>
+                    <th>Reference</th>
+                    <th>Medication</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Requested</th>
+                    <th>Admin Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of reqTable.data">
+                    <td>{{ r.requestRef || ('REQ-' + r.id) }}</td>
+                    <td>{{ r.medicationName }}</td>
+                    <td>{{ r.requestType || '—' }}</td>
+                    <td>
+                      <nz-tag [nzColor]="requestStatusColor(r.status)">
+                        {{ r.status || 'PENDING' }}
+                      </nz-tag>
+                    </td>
+                    <td>{{ r.requestedAt ? (r.requestedAt | date:'medium') : '—' }}</td>
+                    <td>{{ r.adminNote || '—' }}</td>
+                  </tr>
+                </tbody>
+              </nz-table>
+            </ng-container>
+
+            <ng-template #emptyRequests>
+              <div class="empty muted">No prescription requests yet.</div>
+            </ng-template>
+          </nz-tab>
+
+          <!-- TIMELINE -->
+          <nz-tab nzTitle="Timeline">
+            <div class="timeline-head">
+              <button nz-button nzType="default" (click)="fetch()">Refresh</button>
+            </div>
+
+            <div *ngIf="filteredTimeline().length; else emptyTime">
+              <nz-timeline>
+                <nz-timeline-item *ngFor="let t of filteredTimeline()">
+                  <div class="tl-item">
+                    <div class="tl-title">
+                      <span class="tl-type">{{ t.type }}</span>
+                      <span class="tl-main">{{ t.title }}</span>
+                      <nz-badge *ngIf="t.status" [nzStatus]="statusBadge(t.status)" [nzText]="t.status"></nz-badge>
+                    </div>
+                    <div class="tl-meta">
+                      <span>{{ t.dateTime | date:'medium' }}</span>
+                      <span class="muted" *ngIf="t.refId">Ref: {{ t.refId }}</span>
+                      <span class="muted" *ngIf="t.clinicianName">Clinician: {{ t.clinicianName }}</span>
+                    </div>
+                  </div>
+                </nz-timeline-item>
+              </nz-timeline>
+            </div>
+
+            <ng-template #emptyTime>
+              <div class="empty muted">No timeline events yet.</div>
+            </ng-template>
+          </nz-tab>
+
+        </nz-tabset>
+      </nz-card>
+
+      <nz-modal
+        [(nzVisible)]="prescriptionRequestModalOpen"
+        nzTitle="Request Prescription"
+        nzOkText="Submit Request"
+        nzCancelText="Cancel"
+        [nzOkLoading]="savingPrescriptionRequest"
+        (nzOnCancel)="closePrescriptionRequestModal()"
+        (nzOnOk)="savePrescriptionRequest()"
+      >
+        <ng-container *nzModalContent>
+          <div class="modal-form">
+            <label class="field-label">Medication</label>
+            <nz-select
+              [(ngModel)]="prescriptionRequestForm.medicationName"
+              nzPlaceHolder="Select a medication from your record">
+              <nz-option
+                *ngFor="let m of requestableMedications"
+                [nzValue]="m.medicationName"
+                [nzLabel]="m.medicationName + (m.dosage ? ' - ' + m.dosage : '')">
+              </nz-option>
+            </nz-select>
+
+            <label class="field-label">Requested dosage</label>
+            <input
+              nz-input
+              [(ngModel)]="prescriptionRequestForm.requestedDosage"
+              placeholder="e.g. 50mg"
+            />
+
+            <label class="field-label">Request type</label>
+            <nz-select [(ngModel)]="prescriptionRequestForm.requestType" nzPlaceHolder="Select request type">
+              <nz-option nzValue="REPEAT" nzLabel="Repeat"></nz-option>
+              <nz-option nzValue="NEW" nzLabel="New"></nz-option>
+            </nz-select>
+
+            <label class="field-label">Reason</label>
+            <textarea
+              nz-input
+              rows="4"
+              [(ngModel)]="prescriptionRequestForm.reason"
+              placeholder="Tell us why you need this prescription"
+            ></textarea>
+          </div>
+        </ng-container>
+      </nz-modal>
+
+    </ng-container>
+  </div>
+</nz-spin>

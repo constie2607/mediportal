@@ -1,0 +1,96 @@
+<div class="auth-page">
+  <div class="auth-shell">
+    <!-- LEFT: Image/Testimonial panel -->
+    <section class="auth-visual">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span class="brand-name">MediPortal</span>
+      </div>
+
+      <div class="quote">
+        <div class="quote-text">
+          “Secure, simple access to your care — whenever you need it.”
+        </div>
+        <div class="quote-meta">
+          <div class="quote-name">MediPortal</div>
+          <div class="quote-role">GP Practice Portal</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Form panel -->
+    <section class="auth-form">
+      <div class="form-inner">
+        <h1 nz-typography class="title">Admin Login</h1>
+        <p nz-typography nzType="secondary" class="subtitle">
+          Your all-in-one healthcare portal.
+        </p>
+
+        <form nz-form [formGroup]="loginForm"  class="form" (ngSubmit)="submitForm()">
+          <!-- Email -->
+          <nz-form-item>
+            <nz-form-control
+              
+              nzErrorTip="Enter a valid Email"
+            >
+              <label class="field-label">Email</label>
+              <nz-input-group nzSize="large">
+                <input nz-input type="email" formControlName="email" placeholder="name@example.com" />
+              </nz-input-group>
+            </nz-form-control>
+          </nz-form-item>
+
+          <!-- Password -->
+          <nz-form-item>
+            <nz-form-control
+              
+              nzErrorTip="Password is required"
+            >
+              <label class="field-label">Password</label>
+              <nz-input-group nzSize="large">
+                <input nz-input type="password" formControlName="password" placeholder="••••••••" />
+              </nz-input-group>
+            </nz-form-control>
+          </nz-form-item>
+
+          <!-- Forgot password -->
+          <div class="row-between">
+            <a class="link" routerLink="/forgot-password">Forgot password?</a>
+          </div>
+
+      
+
+          <!-- Login button -->
+          <button
+            nz-button
+            nzType="primary"
+            nzSize="large"
+            class="primary-btn"
+           
+            [disabled]="loginForm.invalid"
+          >
+            Log in
+          </button>
+
+          <!-- Divider -->
+          <div class="divider">
+            <span class="divider-line"></span>
+            <span class="divider-text">OR</span>
+            <span class="divider-line"></span>
+          </div>
+
+          <!-- Admin link -->
+          <div class="bottom-links">
+            <span nz-typography nzType="secondary">Patient?</span>
+            <a class="link" routerLink="/basic/login">Sign in here</a>
+          </div>
+
+          <!-- Register link -->
+          <div class="bottom-links">
+            <a class="link" routerLink="/register">First time here? Activate your account</a>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+</div>

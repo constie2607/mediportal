@@ -1,0 +1,124 @@
+<nz-card nzTitle="Book appointment">
+  <nz-spin [nzSpinning]="loading">
+
+    <!-- Patient + triage details -->
+    <nz-card nzSize="small" nzTitle="Patient details" style="margin-bottom:12px;" *ngIf="triageView as tv">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px 16px;">
+        <p style="margin:0;"><b>Name:</b> {{ ((tv.patient.firstName || '') + ' ' + (tv.patient.lastName || '')).trim() || '-' }}</p>
+        <p style="margin:0;"><b>Email:</b> {{ tv.patient.email || '-' }}</p>
+        <p style="margin:0;"><b>Phone:</b> {{ tv.patient.phoneNumber || '-' }}</p>
+        <p style="margin:0;"><b>DOB:</b> {{ tv.patient.dateOfBirth || '-' }}</p>
+      </div>
+
+      <div style="margin-top:10px;">
+        <p style="margin:0;"><b>Problem:</b> {{ tv.triage.problem || '-' }}</p>
+        <p style="margin:0;"><b>Duration:</b> {{ tv.triage.duration || '-' }}</p>
+        <p style="margin:0;"><b>Help wanted:</b> {{ tv.triage.helpWanted || '-' }}</p>
+      </div>
+    </nz-card>
+
+    <!-- booking controls -->
+    <form [formGroup]="form">
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+        <div style="min-width:260px; flex:1;">
+          <label style="display:block; font-size:12px; opacity:.8;">Doctor</label>
+          <nz-select style="width:100%;" formControlName="doctorId" nzPlaceHolder="Select doctor">
+            <nz-option *ngFor="let d of allDoctors" [nzValue]="d.id" [nzLabel]="d.name"></nz-option>
+          </nz-select>
+        </div>
+
+        <div style="min-width:220px;">
+          <label style="display:block; font-size:12px; opacity:.8;">Week</label>
+          <nz-date-picker style="width:100%;" formControlName="date"></nz-date-picker>
+        </div>
+
+        <div style="min-width:180px;">
+          <label style="display:block; font-size:12px; opacity:.8;">Type</label>
+          <nz-select style="width:100%;" formControlName="type">
+            <nz-option nzValue="PHONE" nzLabel="Phone"></nz-option>
+            <nz-option nzValue="IN_PERSON" nzLabel="In person"></nz-option>
+            <nz-option nzValue="VIDEO" nzLabel="Video"></nz-option>
+          </nz-select>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label style="display:block; font-size:12px; opacity:.8;">Note (optional)</label>
+        <textarea nz-input rows="2" formControlName="note"></textarea>
+      </div>
+    </form>
+
+    <!-- grid -->
+    <div style="margin-top:16px; overflow:auto;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="width:90px; text-align:left; padding:8px; border-bottom:1px solid #eee;">Time</th>
+            <th *ngFor="let d of days" style="padding:8px; border-bottom:1px solid #eee;">
+              {{ d | date:'EEE' }}<br />
+              <span style="font-weight:400; opacity:.7;">{{ d | date:'dd MMM' }}</span>
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let row of grid; let ti = index">
+            <td style="padding:8px; border-bottom:1px solid #f3f3f3; font-weight:600;">
+              {{ times[ti] }}
+            </td>
+
+            <td *ngFor="let slot of row" style="padding:6px; border-bottom:1px solid #f3f3f3;">
+              <button
+                nz-button
+                nzSize="small"
+                style="width:100%;"
+                [nzType]="selectedSlot?.startIso === slot.startIso ? 'primary' : 'default'"
+                [disabled]="!slot.available && !slot.booked"
+                (click)="onSlotClick(slot)"
+              >
+                {{ slot.booked ? 'Booked' : (slot.available ? 'Available' : 'Unavailable') }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; flex-wrap:wrap; gap:12px;">
+      <div style="opacity:.85;">
+        Selected:
+        <b *ngIf="selectedSlot; else none">{{ selectedSlot.startIso }}</b>
+        <ng-template #none>—</ng-template>
+      </div>
+
+      <button nz-button nzType="primary" (click)="confirm()">
+        Confirm appointment
+      </button>
+    </div>
+
+  </nz-spin>
+</nz-card>
+
+<!-- BOOKED SLOT MODAL -->
+<nz-modal
+  [(nzVisible)]="bookedModalOpen"
+  nzTitle="Booked appointment details"
+  (nzOnCancel)="bookedModalOpen=false"
+  [nzFooter]="null"
+>
+  <ng-container *nzModalContent>
+    <p><b>Time:</b> {{ bookedSlotIso }}</p>
+
+    <nz-card nzSize="small" nzTitle="Triage / Patient" *ngIf="triageView as tv">
+      <p><b>Patient:</b> {{ ((tv.patient.firstName || '') + ' ' + (tv.patient.lastName || '')).trim() || '-' }}</p>
+      <p><b>Email:</b> {{ tv.patient.email || '-' }}</p>
+      <p><b>Problem:</b> {{ tv.triage.problem || '-' }}</p>
+    </nz-card>
+
+    <nz-card nzSize="small" nzTitle="Appointment" style="margin-top:12px;" *ngIf="bookedAppointment as ap">
+      <p><b>Appointment ID:</b> {{ ap.appointmentId || '-' }}</p>
+      <p><b>Type:</b> {{ ap.type || '-' }}</p>
+      <p><b>Note:</b> {{ ap.note || '-' }}</p>
+    </nz-card>
+  </ng-container>
+</nz-modal>
